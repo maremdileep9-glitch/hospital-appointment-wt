@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hospital Appointment System</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f1f5f9;
+      color: #1e293b;
+    }
+
+    header {
+      padding: 35px 20px;
+      text-align: center;
+      color: white;
+      background: linear-gradient(135deg, #0284c7, #0f766e);
+    }
+
+    header h1 {
+      margin: 0 0 10px;
+    }
+
+    .container {
+      width: 92%;
+      max-width: 1150px;
+      margin: 30px auto;
+    }
+
+    .card {
+      margin-bottom: 25px;
+      padding: 25px;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    }
+
+    h2 {
+      margin-top: 0;
+      color: #075985;
+    }
+
+    form {
+      display: grid;
+      gap: 14px;
+    }
+
+    input,
+    select,
+    button {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #cbd5e1;
+      border-radius: 7px;
+      font-size: 15px;
+    }
+
+    button {
+      border: none;
+      color: white;
+      background: #0284c7;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    button:hover {
+      background: #0369a1;
+    }
+
+    .danger {
+      background: #dc2626;
+    }
+
+    .danger:hover {
+      background: #b91c1c;
+    }
+
+    .secondary {
+      background: #475569;
+    }
+
+    .secondary:hover {
+      background: #334155;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    .doctor-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+    }
+
+    .doctor-card,
+    .appointment-card {
+      padding: 20px;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    }
+
+    .doctor-card h3 {
+      margin-top: 0;
+      color: #0284c7;
+    }
+
+    .doctor-card button {
+      margin-top: 8px;
+    }
+
+    .appointment-card {
+      margin-bottom: 15px;
+      border-left: 5px solid #0284c7;
+    }
+
+    .appointment-card h3 {
+      margin-top: 0;
+      color: #075985;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 15px;
+    }
+
+    .section-header input {
+      max-width: 300px;
+    }
+
+    .empty {
+      padding: 20px;
+      text-align: center;
+      background: white;
+      border-radius: 10px;
+    }
+
+    #message {
+      position: fixed;
+      right: 20px;
+      bottom: 20px;
+      display: none;
+      max-width: 320px;
+      padding: 15px 20px;
+      color: white;
+      background: #16a34a;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+
+    #bookingSection {
+      display: none;
+    }
+
+    @media (max-width: 650px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+
+      .section-header {
+        align-items: stretch;
+        flex-direction: column;
+      }
+
+      .section-header input {
+        max-width: none;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <h1>CityCare Hospital</h1>
+    <p>Online Doctor Appointment Booking System</p>
+  </header>
+
+  <main class="container">
+    <section class="card">
+      <h2>Find a Doctor</h2>
+
+      <input
+        type="text"
+        id="searchDoctor"
+        placeholder="Search by doctor name or specialization"
+        oninput="displayDoctors()"
+      />
+    </section>
+
+    <section>
+      <div id="doctorList" class="doctor-list"></div>
+    </section>
+
+    <section id="bookingSection" class="card">
+      <h2>Book Appointment</h2>
+
+      <p>
+        <strong>Selected Doctor:</strong>
+        <span id="selectedDoctor"></span>
+      </p>
+
+      <form id="appointmentForm">
+        <input type="hidden" id="doctorId" />
+
+        <input
+          type="text"
+          id="patientName"
+          placeholder="Patient full name"
+          required
+        />
+
+        <input
+          type="email"
+          id="patientEmail"
+          placeholder="Patient email"
+          required
+        />
+
+        <input
+          type="tel"
+          id="patientPhone"
+          placeholder="Patient phone number"
+          required
+        />
+
+        <div class="grid">
+          <input type="date" id="appointmentDate" required />
+          <select id="appointmentTime" required>
+            <option value="">Select time</option>
+            <option>09:00 AM</option>
+            <option>10:00 AM</option>
+            <option>11:00 AM</option>
+            <option>12:00 PM</option>
+            <option>02:00 PM</option>
+            <option>03:00 PM</option>
+            <option>04:00 PM</option>
+            <option>05:00 PM</option>
+          </select>
+        </div>
+
+        <button type="submit">Confirm Appointment</button>
+
+        <button
+          type="button"
+          class="secondary"
+          onclick="closeBookingForm()"
+        >
+          Cancel
+        </button>
+      </form>
+    </section>
+
+    <section class="card">
+      <div class="section-header">
+        <h2>My Appointments</h2>
+
+        <button
+          class="secondary"
+          onclick="clearAllAppointments()"
+        >
+          Clear All
+        </button>
+      </div>
+
+      <div id="appointmentList"></div>
+    </section>
+  </main>
+
+  <div id="message"></div>
+
+  <script>
+    const doctors = [
+      {
+        id: 1,
+        name: "Dr. Ananya Sharma",
+        specialization: "Cardiologist",
+        experience: "12 years experience",
+        fee: "₹800",
+        availability: "Monday - Friday"
+      },
+      {
+        id: 2,
+        name: "Dr. Rahul Verma",
+        specialization: "Dermatologist",
+        experience: "9 years experience",
+        fee: "₹600",
+        availability: "Monday - Saturday"
+      },
+      {
+        id: 3,
+        name: "Dr. Priya Nair",
+        specialization: "Pediatrician",
+        experience: "10 years experience",
+        fee: "₹700",
+        availability: "Tuesday - Sunday"
+      },
+      {
+        id: 4,
+        name: "Dr. Arjun Mehta",
+        specialization: "Orthopedic Surgeon",
+        experience: "15 years experience",
+        fee: "₹900",
+        availability: "Monday - Friday"
+      },
+      {
+        id: 5,
+        name: "Dr. Sneha Rao",
+        specialization: "Gynecologist",
+        experience: "11 years experience",
+        fee: "₹750",
+        availability: "Monday - Saturday"
+      },
+      {
+        id: 6,
+        name: "Dr. Vikram Singh",
+        specialization: "Neurologist",
+        experience: "14 years experience",
+        fee: "₹1000",
+        availability: "Wednesday - Sunday"
+      }
+    ];
+
+    let appointments =
+      JSON.parse(localStorage.getItem("appointments")) || [];
+
+    const today = new Date().toISOString().split("T")[0];
+
+    document.getElementById("appointmentDate").min = today;
+
+    function showMessage(message, success = true) {
+      const messageBox = document.getElementById("message");
+
+      messageBox.textContent = message;
+      messageBox.style.background =
+        success ? "#16a34a" : "#dc2626";
+      messageBox.style.display = "block";
+
+      setTimeout(() => {
+        messageBox.style.display = "none";
+      }, 3000);
+    }
+
+    function saveAppointments() {
+      localStorage.setItem(
+        "appointments",
+        JSON.stringify(appointments)
+      );
+    }
+
+    function escapeHTML(value) {
+      return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function displayDoctors() {
+      const doctorList = document.getElementById("doctorList");
+      const searchText = document
+        .getElementById("searchDoctor")
+        .value
+        .toLowerCase()
+        .trim();
+
+      const filteredDoctors = doctors.filter((doctor) => {
+        return (
+          doctor.name.toLowerCase().includes(searchText) ||
+          doctor.specialization
+            .toLowerCase()
+            .includes(searchText)
+        );
+      });
+
+      doctorList.innerHTML = "";
+
+      if (filteredDoctors.length === 0) {
+        doctorList.innerHTML = `
+          <div class="empty">
+            <p>No doctors found.</p>
+          </div>
+        `;
+        return;
+      }
+
+      filteredDoctors.forEach((doctor) => {
+        const card = document.createElement("div");
+        card.className = "doctor-card";
+
+        card.innerHTML = `
+          <h3>${escapeHTML(doctor.name)}</h3>
+
+          <p>
+            <strong>Specialization:</strong>
+            ${escapeHTML(doctor.specialization)}
+          </p>
+
+          <p>
+            <strong>Experience:</strong>
+            ${escapeHTML(doctor.experience)}
+          </p>
+
+          <p>
+            <strong>Consultation fee:</strong>
+            ${escapeHTML(doctor.fee)}
+          </p>
+
+          <p>
+            <strong>Available:</strong>
+            ${escapeHTML(doctor.availability)}
+          </p>
+
+          <button onclick="openBookingForm(${doctor.id})">
+            Book Appointment
+          </button>
+        `;
+
+        doctorList.appendChild(card);
+      });
+    }
+
+    function openBookingForm(doctorId) {
+      const doctor = doctors.find(
+        (item) => item.id === doctorId
+      );
+
+      if (!doctor) {
+        showMessage("Doctor not found", false);
+        return;
+      }
+
+      document.getElementById("doctorId").value = doctor.id;
+      document.getElementById("selectedDoctor").textContent =
+        doctor.name + " - " + doctor.specialization;
+
+      document.getElementById("bookingSection").style.display =
+        "block";
+
+      document.getElementById("bookingSection").scrollIntoView({
+        behavior: "smooth"
+      });
+    }
+
+    function closeBookingForm() {
+      document.getElementById("bookingSection").style.display =
+        "none";
+
+      document.getElementById("appointmentForm").reset();
+    }
+
+    document
+      .getElementById("appointmentForm")
+      .addEventListener("submit", function (event) {
+        event.preventDefault();
+
+        const doctorId = Number(
+          document.getElementById("doctorId").value
+        );
+
+        const doctor = doctors.find(
+          (item) => item.id === doctorId
+        );
+
+        const patientName = document
+          .getElementById("patientName")
+          .value.trim();
+
+        const patientEmail = document
+          .getElementById("patientEmail")
+          .value.trim();
+
+        const patientPhone = document
+          .getElementById("patientPhone")
+          .value.trim();
+
+        const appointmentDate =
+          document.getElementById("appointmentDate").value;
+
+        const appointmentTime =
+          document.getElementById("appointmentTime").value;
+
+        const timeAlreadyBooked = appointments.some(
+          (appointment) =>
+            appointment.doctorId === doctorId &&
+            appointment.date === appointmentDate &&
+            appointment.time === appointmentTime
+        );
+
+        if (timeAlreadyBooked) {
+          showMessage(
+            "This time slot is already booked for this doctor",
+            false
+          );
+          return;
+        }
+
+        const newAppointment = {
+          id: Date.now(),
+          doctorId: doctor.id,
+          doctorName: doctor.name,
+          specialization: doctor.specialization,
+          patientName,
+          patientEmail,
+          patientPhone,
+          date: appointmentDate,
+          time: appointmentTime,
+          status: "Confirmed"
+        };
+
+        appointments.push(newAppointment);
+        saveAppointments();
+        displayAppointments();
+        closeBookingForm();
+
+        showMessage("Appointment booked successfully");
+      });
+
+    function displayAppointments() {
+      const appointmentList =
+        document.getElementById("appointmentList");
+
+      appointmentList.innerHTML = "";
+
+      if (appointments.length === 0) {
+        appointmentList.innerHTML = `
+          <div class="empty">
+            <p>No appointments booked yet.</p>
+          </div>
+        `;
+        return;
+      }
+
+      appointments
+        .slice()
+        .reverse()
+        .forEach((appointment) => {
+          const card = document.createElement("div");
+          card.className = "appointment-card";
+
+          card.innerHTML = `
+            <h3>${escapeHTML(appointment.doctorName)}</h3>
+
+            <p>
+              <strong>Specialization:</strong>
+              ${escapeHTML(appointment.specialization)}
+            </p>
+
+            <p>
+              <strong>Patient:</strong>
+              ${escapeHTML(appointment.patientName)}
+            </p>
+
+            <p>
+              <strong>Email:</strong>
+              ${escapeHTML(appointment.patientEmail)}
+            </p>
+
+            <p>
+              <strong>Phone:</strong>
+              ${escapeHTML(appointment.patientPhone)}
+            </p>
+
+            <p>
+              <strong>Date:</strong>
+              ${escapeHTML(appointment.date)}
+            </p>
+
+            <p>
+              <strong>Time:</strong>
+              ${escapeHTML(appointment.time)}
+            </p>
+
+            <p>
+              <strong>Status:</strong>
+              ${escapeHTML(appointment.status)}
+            </p>
+
+            <button
+              class="danger"
+              onclick="cancelAppointment(${appointment.id})"
+            >
+              Cancel Appointment
+            </button>
+          `;
+
+          appointmentList.appendChild(card);
+        });
+    }
+
+    function cancelAppointment(appointmentId) {
+      const confirmed = confirm(
+        "Are you sure you want to cancel this appointment?"
+      );
+
+      if (!confirmed) {
+        return;
+      }
+
+      appointments = appointments.filter(
+        (appointment) => appointment.id !== appointmentId
+      );
+
+      saveAppointments();
+      displayAppointments();
+
+      showMessage("Appointment cancelled successfully");
+    }
+
+    function clearAllAppointments() {
+      if (appointments.length === 0) {
+        showMessage("There are no appointments to clear", false);
+        return;
+      }
+
+      const confirmed = confirm(
+        "Are you sure you want to delete all appointments?"
+      );
+
+      if (!confirmed) {
+        return;
+      }
+
+      appointments = [];
+      saveAppointments();
+      displayAppointments();
+
+      showMessage("All appointments deleted");
+    }
+
+    displayDoctors();
+    displayAppointments();
+  </script>
+</body>
+</html>
